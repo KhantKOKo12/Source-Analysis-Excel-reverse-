@@ -1,4 +1,4 @@
-from openpyxl.styles import NamedStyle, PatternFill, Border, Side
+from openpyxl.styles import NamedStyle, PatternFill, Border, Side, Alignment, Font
 from openpyxl import load_workbook
 from pathlib import Path
 import shutil
@@ -90,7 +90,11 @@ class ExcelWorkbook:
                         table_name = main_cell.value
                         table_name = table_name.replace('[', '')
                         table_name = table_name.replace(']', '').lower()
-
+                        for row in range(3, sheet.max_row + 1):
+                            child_cell = sheet.cell(row=row, column=col)
+                            child_cell_value = child_cell.value
+                            if child_cell_value is not None:
+                                child_cell.style = 'soft_brown_with_border'
                         self.extrate_column_names(table_name, sheet, col, is_first_sheet)
                         #main_cell.value is table name 
                         #if main_cell.value is exit in log dir, read data and convert array and store in self.column_names
@@ -134,14 +138,22 @@ class ExcelWorkbook:
                                 #if child_cell.value exit in self.column_names
                                     child_cell_value = unicodedata.normalize('NFKC', child_cell_value)
                                     # for column in columns:
-                                    if child_cell_value.lower() not in columns:
-                                        child_cell.style = 'soft_brown_with_border'
+                                    # if child_cell_value.lower() not in columns:
+                                    #     child_cell.style = 'soft_brown_with_border'
+                                    if child_cell_value.lower() in columns:
+                                        self.clear_styles(child_cell)
+                                        
                     else:
                         pass                
 
         if not is_same and is_first_sheet:
             self.main_cell.style = 'soft_brown_with_border'                            
 
+    def clear_styles(self, cell):
+        cell.font = Font()
+        cell.border = Border()
+        cell.fill = PatternFill()
+        cell.alignment = Alignment()
     
 def process_excel_file():  
     today_date = datetime.today().strftime('%Y_%m_%d_%H_%M_%S')
